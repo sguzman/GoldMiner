@@ -14,7 +14,7 @@ scalaVersion := "2.12.4"
 scalacOptions ++= Seq("-feature", "-unchecked", "-deprecation", "-encoding", "utf8")
 
 /** Javac parameters */
-javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-server")
+javacOptions ++= Seq("-server")
 
 /** Resolver */
 resolvers ++= Seq(
