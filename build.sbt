@@ -31,8 +31,9 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-core" % "0.9.0-M2",
   "io.circe" %% "circe-generic" % "0.9.0-M2",
   "io.circe" %% "circe-parser" % "0.9.0-M2",
-  "org.feijoas" % "mango_2.12" % "0.14",
-  "org.scalaj" % "scalaj-http_2.12" % "2.3.0"
+  "org.feijoas" %% "mango" % "0.14",
+  "org.scalaj" %% "scalaj-http" % "2.3.0",
+  "com.github.scopt" %% "scopt" % "3.7.0"
 )
 
 /** Make sure to fork on run */
