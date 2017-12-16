@@ -33,7 +33,8 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser" % "0.9.0-M2",
   "org.feijoas" %% "mango" % "0.14",
   "org.scalaj" %% "scalaj-http" % "2.3.0",
-  "com.github.scopt" %% "scopt" % "3.7.0"
+  "com.github.scopt" %% "scopt" % "3.7.0",
+  "net.ruippeixotog" % "scala-scraper_2.12" % "2.0.0"
 )
 
 /** Make sure to fork on run */
