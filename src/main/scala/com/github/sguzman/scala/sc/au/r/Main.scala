@@ -9,7 +9,7 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 
 import scala.util.{Failure, Success}
-import scalaj.http.Http
+import scalaj.http.{Http, HttpResponse}
 
 object Main {
   def main(args: Array[String]): Unit = util.Try({
@@ -17,6 +17,14 @@ object Main {
     if (configOpt.isEmpty) throw new Exception("Invalid cmd args")
     val config = configOpt.get
 
+    val postResponse = login(config)
+    println(postResponse)
+  }) match {
+    case Success(_) => println("done")
+    case Failure(e) => Console.err.println(e)
+  }
+
+  def login(config: Creds): HttpResponse[String] = {
     val response = Http("https://my.sa.ucsb.edu/gold/Login.aspx").asString
 
     val doc = JsoupBrowser().parseString(response.body)
@@ -37,9 +45,6 @@ object Main {
     val bodyStr = bodyPairs.map(t => s"${t._1}=${t._2}").mkString("&")
 
     val postResponse = Http("https://my.sa.ucsb.edu/gold/Login.aspx").postData(bodyStr).asString
-    println(postResponse)
-  }) match {
-    case Success(_) => println("done")
-    case Failure(e) => Console.err.println(e)
+    postResponse
   }
 }
