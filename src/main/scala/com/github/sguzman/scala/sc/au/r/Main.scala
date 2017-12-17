@@ -13,15 +13,19 @@ import scalaj.http.{Http, HttpResponse}
 
 object Main {
   def main(args: Array[String]): Unit = util.Try({
-    val configOpt = new CredsConfig().parse(args, Creds())
-    if (configOpt.isEmpty) throw new Exception("Invalid cmd args")
-    val config = configOpt.get
+    val config = arg(args)
 
     val postResponse = login(config)
     println(postResponse)
   }) match {
     case Success(_) => println("done")
     case Failure(e) => Console.err.println(e)
+  }
+
+  def arg(args: Array[String]): Creds = {
+    val configOpt = new CredsConfig().parse(args, Creds())
+    if (configOpt.isEmpty) throw new Exception("Invalid cmd args")
+    configOpt.get
   }
 
   def login(config: Creds): HttpResponse[String] = {
