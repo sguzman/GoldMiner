@@ -15,14 +15,12 @@ object Main {
   def main(args: Array[String]): Unit = util.Try({
     val config = arg(args)
     val response = login(config)
+    val basicResponse = get("https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx", response)
 
-    val basicResponse = Http("https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx")
-        .header("Cookie", response.cookies.mkString("; "))
-      .asString
     val quarter = quarters(basicResponse)
+    val department = departments(basicResponse)
 
-
-    println(quarter)
+    println(department)
   }) match {
     case Success(_) => println("done")
     case Failure(e) => Console.err.println(e)
@@ -37,6 +35,14 @@ object Main {
     val configOpt = new CredsConfig().parse(args, Creds())
     if (configOpt.isEmpty) throw new Exception("Invalid cmd args")
     configOpt.get
+  }
+
+  def departments(response: HttpResponse[String]): List[String] = {
+    val doc = JsoupBrowser().parseString(response.body)
+    val departDrop = doc >> elementList("#pageContent_subjectAreaDropDown > option")
+    val values = departDrop.map(_.attr("value"))
+
+    values.tail
   }
 
   def quarters(response: HttpResponse[String]): List[String] = {
