@@ -23,7 +23,9 @@ object Main {
     println(department)
   }) match {
     case Success(_) => println("done")
-    case Failure(e) => Console.err.println(e)
+    case Failure(e) =>
+      Console.err.println(e)
+      e.printStackTrace()
   }
 
   def get(url: String, cookiesResponse: HttpResponse[String]): HttpResponse[String] =
