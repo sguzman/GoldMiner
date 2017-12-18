@@ -14,9 +14,15 @@ import scalaj.http.{Http, HttpResponse}
 object Main {
   def main(args: Array[String]): Unit = util.Try({
     val config = arg(args)
+    val response = login(config)
 
-    val postResponse = login(config)
-    println(postResponse)
+    val basicResponse = Http("https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx")
+        .header("Cookie", response.cookies.mkString("; "))
+      .asString
+    val quarter = quarters(basicResponse)
+
+
+    println(quarter)
   }) match {
     case Success(_) => println("done")
     case Failure(e) => Console.err.println(e)
@@ -26,6 +32,14 @@ object Main {
     val configOpt = new CredsConfig().parse(args, Creds())
     if (configOpt.isEmpty) throw new Exception("Invalid cmd args")
     configOpt.get
+  }
+
+  def quarters(response: HttpResponse[String]): List[String] = {
+    val doc = JsoupBrowser().parseString(response.body)
+    val quarterDrop = doc >> elementList("#pageContent_quarterDropDown > option")
+    val values = quarterDrop.map(_.attr("value"))
+
+    values
   }
 
   def login(config: Creds): HttpResponse[String] = {
