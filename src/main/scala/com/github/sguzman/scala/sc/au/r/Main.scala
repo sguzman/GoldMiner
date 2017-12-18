@@ -28,6 +28,11 @@ object Main {
     case Failure(e) => Console.err.println(e)
   }
 
+  def get(url: String, cookiesResponse: HttpResponse[String]): HttpResponse[String] =
+    Http(url)
+      .header("Cookie", cookiesResponse.cookies.mkString("; "))
+      .asString
+
   def arg(args: Array[String]): Creds = {
     val configOpt = new CredsConfig().parse(args, Creds())
     if (configOpt.isEmpty) throw new Exception("Invalid cmd args")
