@@ -15,13 +15,19 @@ import scalaj.http.{Http, HttpResponse}
 object Main {
   def main(args: Array[String]): Unit = util.Try({
     val config = arg(args)
+    scribe.info(config.toString)
+
     val response = login(config)
+    scribe.info(response)
+
     val basicResponse = HttpL.get("https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx", response)
+    scribe.info(response)
 
     val quarter = quarters(basicResponse)
-    val department = departments(basicResponse)
+    scribe.info(quarter)
 
-    println(department)
+    val department = departments(basicResponse)
+    scribe.info(department)
   }) match {
     case Success(_) => println("done")
     case Failure(e) =>
