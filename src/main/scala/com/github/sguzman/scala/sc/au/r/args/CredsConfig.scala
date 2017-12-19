@@ -27,7 +27,7 @@ class CredsConfig extends scopt.OptionParser[Creds]("scAUr") {
   opt[Unit]('v', "verbose")
     .text("Should logging be printed out?")
     .optional()
-    .action((x, c) => c.copy(old = true))
+    .action((x, c) => c.copy(verbose = true))
 
   opt[Unit]('d', "dev")
     .text("Is this development mode?")
