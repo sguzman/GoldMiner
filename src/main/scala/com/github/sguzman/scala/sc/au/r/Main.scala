@@ -29,29 +29,18 @@ object Main {
       e.printStackTrace()
   }
 
-  def assertLoginResponse(response: HttpResponse[String]): Unit = {
-    Preconditions.checkNotNull(response, "Response is null")
-    Preconditions.checkArgument(response.code == 302, "Code is not 302")
-
-    val statusLine = "HTTP/1.1 302 Found"
-    Preconditions.checkArgument(response.statusLine == statusLine, s"Statusline is not $statusLine")
-
-    val body = "<html><head><title>Object moved</title></head><body>\r\n<h2>Object moved to <a href=\"/gold/Home.aspx\">here</a>.</h2>\r\n</body></html>\r\n"
-    Preconditions.checkArgument(response.body == body, s"Body does not match $body")
-  }
-
   def get(url: String, cookiesResponse: HttpResponse[String]): HttpResponse[String] = {
     val response = Http(url)
       .header("Cookie", cookiesResponse.cookies.mkString("; "))
       .asString
 
-    Preconditions.checkArgument(response.is2xx && response.isSuccess, s"Response is not success $response")
+    AssertLogic.assertGET(response)
     response
   }
 
   def arg(args: Array[String]): Creds = {
     val configOpt = new CredsConfig().parse(args, Creds())
-    Preconditions.checkArgument(configOpt.isDefined, "Bad cmd args")
+    AssertLogic.assertArgs(configOpt)
     configOpt.get
   }
 
@@ -92,8 +81,29 @@ object Main {
     val bodyStr = bodyPairs.map(t => s"${t._1}=${t._2}").mkString("&")
 
     val postResponse = Http("https://my.sa.ucsb.edu/gold/Login.aspx").postData(bodyStr).asString
-    assertLoginResponse(postResponse)
+    AssertLogic.assertLoginResponse(postResponse)
 
     postResponse
+  }
+}
+
+object AssertLogic{
+  def assertArgs(configOpt: Option[Creds]): Unit = {
+    Preconditions.checkArgument(configOpt.isDefined, "Bad cmd args")
+  }
+
+  def assertLoginResponse(response: HttpResponse[String]): Unit = {
+    Preconditions.checkNotNull(response, "Response is null")
+    Preconditions.checkArgument(response.code == 302, "Code is not 302")
+
+    val statusLine = "HTTP/1.1 302 Found"
+    Preconditions.checkArgument(response.statusLine == statusLine, s"Statusline is not $statusLine")
+
+    val body = "<html><head><title>Object moved</title></head><body>\r\n<h2>Object moved to <a href=\"/gold/Home.aspx\">here</a>.</h2>\r\n</body></html>\r\n"
+    Preconditions.checkArgument(response.body == body, s"Body does not match $body")
+  }
+
+  def assertGET(response: HttpResponse[String]): Unit = {
+    Preconditions.checkArgument(response.is2xx && response.isSuccess, s"Response is not success $response")
   }
 }
