@@ -29,9 +29,9 @@ object Main {
     val department = departments(basicResponse)
     scribe.info(department)
   }) match {
-    case Success(_) => println("done")
+    case Success(_) => scribe.info("done")
     case Failure(e) =>
-      Console.err.println(e)
+      scribe.error(e)
       e.printStackTrace()
   }
 
