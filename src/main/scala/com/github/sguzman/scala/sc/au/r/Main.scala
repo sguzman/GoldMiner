@@ -16,7 +16,7 @@ object Main {
   def main(args: Array[String]): Unit = util.Try({
     val config = arg(args)
     val response = login(config)
-    val basicResponse = get("https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx", response)
+    val basicResponse = HttpL.get("https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx", response)
 
     val quarter = quarters(basicResponse)
     val department = departments(basicResponse)
@@ -29,18 +29,9 @@ object Main {
       e.printStackTrace()
   }
 
-  def get(url: String, cookiesResponse: HttpResponse[String]): HttpResponse[String] = {
-    val response = Http(url)
-      .header("Cookie", cookiesResponse.cookies.mkString("; "))
-      .asString
-
-    AssertLogic.assertGET(response)
-    response
-  }
-
   def arg(args: Array[String]): Creds = {
     val configOpt = new CredsConfig().parse(args, Creds())
-    AssertLogic.assertArgs(configOpt)
+    AssertL.assertArgs(configOpt)
     configOpt.get
   }
 
@@ -61,7 +52,8 @@ object Main {
   }
 
   def login(config: Creds): HttpResponse[String] = {
-    val response = Http("https://my.sa.ucsb.edu/gold/Login.aspx").asString
+    val response = HttpL.get("https://my.sa.ucsb.edu/gold/Login.aspx")
+    AssertL.assertGET(response)
 
     val doc = JsoupBrowser().parseString(response.body)
     val hidden = doc >> elementList("""input[type="hidden"]""")
@@ -81,13 +73,13 @@ object Main {
     val bodyStr = bodyPairs.map(t => s"${t._1}=${t._2}").mkString("&")
 
     val postResponse = Http("https://my.sa.ucsb.edu/gold/Login.aspx").postData(bodyStr).asString
-    AssertLogic.assertLoginResponse(postResponse)
+    AssertL.assertLoginResponse(postResponse)
 
     postResponse
   }
 }
 
-object AssertLogic{
+object AssertL{
   def assertArgs(configOpt: Option[Creds]): Unit = {
     Preconditions.checkArgument(configOpt.isDefined, "Bad cmd args")
   }
@@ -105,5 +97,23 @@ object AssertLogic{
 
   def assertGET(response: HttpResponse[String]): Unit = {
     Preconditions.checkArgument(response.is2xx && response.isSuccess, s"Response is not success $response")
+  }
+}
+
+object HttpL {
+  def get(url: String, cookiesResponse: HttpResponse[String]): HttpResponse[String] = {
+    val response = Http(url)
+      .header("Cookie", cookiesResponse.cookies.mkString("; "))
+      .asString
+
+    AssertL.assertGET(response)
+    response
+  }
+
+  def get(url: String): HttpResponse[String] = {
+    val response = Http(url).asString
+    AssertL.assertGET(response)
+
+    response
   }
 }
