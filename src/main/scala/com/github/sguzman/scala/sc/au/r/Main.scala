@@ -51,7 +51,7 @@ object Main {
 
   def arg(args: Array[String]): Creds = {
     val configOpt = new CredsConfig().parse(args, Creds())
-    if (configOpt.isEmpty) throw new Exception("Invalid cmd args")
+    Preconditions.checkArgument(configOpt.isDefined, "Bad cmd args")
     configOpt.get
   }
 
