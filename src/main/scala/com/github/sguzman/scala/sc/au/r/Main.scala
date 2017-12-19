@@ -7,6 +7,7 @@ import com.github.sguzman.scala.sc.au.r.args.{Creds, CredsConfig}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
+import org.feijoas.mango.common.base.Preconditions
 
 import scala.util.{Failure, Success}
 import scalaj.http.{Http, HttpResponse}
@@ -28,10 +29,25 @@ object Main {
       e.printStackTrace()
   }
 
-  def get(url: String, cookiesResponse: HttpResponse[String]): HttpResponse[String] =
-    Http(url)
+  def assertLoginResponse(response: HttpResponse[String]): Unit = {
+    Preconditions.checkNotNull(response, "Response is null")
+    Preconditions.checkArgument(response.code == 302, "Code is not 302")
+
+    val statusLine = "HTTP/1.1 302 Found"
+    Preconditions.checkArgument(response.statusLine == statusLine, s"Statusline is not $statusLine")
+
+    val body = "<html><head><title>Object moved</title></head><body>\r\n<h2>Object moved to <a href=\"/gold/Home.aspx\">here</a>.</h2>\r\n</body></html>\r\n"
+    Preconditions.checkArgument(response.body == body, s"Body does not match $body")
+  }
+
+  def get(url: String, cookiesResponse: HttpResponse[String]): HttpResponse[String] = {
+    val response = Http(url)
       .header("Cookie", cookiesResponse.cookies.mkString("; "))
       .asString
+
+    Preconditions.checkArgument(response.is2xx && response.isSuccess, s"Response is not success $response")
+    response
+  }
 
   def arg(args: Array[String]): Creds = {
     val configOpt = new CredsConfig().parse(args, Creds())
@@ -76,6 +92,8 @@ object Main {
     val bodyStr = bodyPairs.map(t => s"${t._1}=${t._2}").mkString("&")
 
     val postResponse = Http("https://my.sa.ucsb.edu/gold/Login.aspx").postData(bodyStr).asString
+    assertLoginResponse(postResponse)
+
     postResponse
   }
 }
