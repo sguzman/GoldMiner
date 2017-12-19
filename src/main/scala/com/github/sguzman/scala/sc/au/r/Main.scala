@@ -53,7 +53,6 @@ object Main {
 
   def login(config: Creds): HttpResponse[String] = {
     val response = HttpL.get("https://my.sa.ucsb.edu/gold/Login.aspx")
-    AssertL.assertGET(response)
 
     val doc = JsoupBrowser().parseString(response.body)
     val hidden = doc >> elementList("""input[type="hidden"]""")
