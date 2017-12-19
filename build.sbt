@@ -34,7 +34,9 @@ libraryDependencies ++= Seq(
   "org.feijoas" %% "mango" % "0.14",
   "org.scalaj" %% "scalaj-http" % "2.3.0",
   "com.github.scopt" %% "scopt" % "3.7.0",
-  "net.ruippeixotog" % "scala-scraper_2.12" % "2.0.0"
+  "net.ruippeixotog" %% "scala-scraper" % "2.0.0",
+  "com.outr" %% "scribe" % "1.4.5"
+
 )
 
 /** Make sure to fork on run */
