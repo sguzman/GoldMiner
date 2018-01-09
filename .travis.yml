@@ -6,4 +6,7 @@ notifications:
     slack: initialcommitio:QadMr0XToU1nr1dteV5nYFpW
 
 script:
- - sbt assembly
+ - sbt clean coverage test coverageReport
+
+ after_success:
+  - bash <(curl -s https://codecov.io/bash)
