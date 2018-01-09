@@ -33,6 +33,7 @@ object Main {
     case Failure(e) =>
       scribe.error(e)
       e.printStackTrace()
+      throw e
   }
 
   def arg(args: Array[String]): Creds = {
