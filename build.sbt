@@ -32,17 +32,12 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-core" % "0.9.0-M2",
   "io.circe" %% "circe-generic" % "0.9.0-M2",
   "io.circe" %% "circe-parser" % "0.9.0-M2",
-  "org.feijoas" %% "mango" % "0.14",
   "org.scalaj" %% "scalaj-http" % "2.3.0",
   "com.github.scopt" %% "scopt" % "3.7.0",
   "net.ruippeixotog" %% "scala-scraper" % "2.0.0",
-  "com.outr" %% "scribe" % "1.4.5"
-)
-
-/** Test Dependencies */
-libraryDependencies ++= Seq(
+  "com.outr" %% "scribe" % "1.4.5",
   "org.scalactic" %% "scalactic" % "3.2.0-SNAP9",
-  "org.scalatest" %% "scalatest" % "3.2.0-SNAP9" % "test",
+  "org.scalatest" %% "scalatest" % "3.2.0-SNAP9",
 )
 
 /** Make sure to fork on run */
