@@ -35,7 +35,6 @@ libraryDependencies ++= Seq(
   "org.scalaj" %% "scalaj-http" % "2.3.0",
   "com.github.scopt" %% "scopt" % "3.7.0",
   "net.ruippeixotog" %% "scala-scraper" % "2.0.0",
-  "com.outr" %% "scribe" % "1.4.5",
   "org.scalactic" %% "scalactic" % "3.2.0-SNAP9",
   "org.scalatest" %% "scalatest" % "3.2.0-SNAP9",
 )
