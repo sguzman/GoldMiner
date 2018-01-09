@@ -1,7 +1,7 @@
 package com.github.sguzman.scala.gold.miner
 
-class CredsConfig extends scopt.OptionParser[Creds]("GoldMiner") {
-  head("GoldMiner", "1.0")
+case class CredsConfig(title: String = "GoldMiner") extends scopt.OptionParser[Creds](title) {
+  head(title, "1.0")
 
   opt[String]('u', "perm")
     .text("Perm Number")
