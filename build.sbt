@@ -24,6 +24,7 @@ resolvers ++= Seq(
   Resolver.sbtPluginRepo("releases"),
   Resolver.jcenterRepo,
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+  "Artima Maven Repository" at "http://repo.artima.com/releases"
 )
 
 /** Source Dependencies */
