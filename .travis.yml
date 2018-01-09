@@ -8,5 +8,5 @@ notifications:
 script:
  - sbt clean coverage test coverageReport
 
- after_success:
+after_success:
   - bash <(curl -s https://codecov.io/bash)
