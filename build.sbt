@@ -1,5 +1,5 @@
 /** Name of project */
-name := "ScAUr"
+name := "GoldMiner"
 
 /** Organization */
 organization := "com.github.sguzman"
