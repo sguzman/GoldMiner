@@ -18,6 +18,16 @@ object Main {
     def as[B] = a.asInstanceOf[B]
   }
 
+  implicit def tup2String(tup: (String, String)) = Tuple2StringWrapper(tup)
+  final case class Tuple2StringWrapper(tuple: (String, String)) {
+    def mk = s"${tuple._1}=${tuple._2}"
+  }
+
+  implicit def listTuple2String(list: List[(String, String)]) = ListTup2StringWrapper(list)
+  final case class ListTup2StringWrapper(list: List[(String, String)]) {
+    def body = list map (_.mk) mkString "&"
+  }
+
   implicit def argsToCred(args: Array[String]) = ArgsWrapper(args)
   final case class ArgsWrapper(args: Array[String]) {
     def creds = CredWrapper(CredConfig().parse(args, Cred()).get)
@@ -25,16 +35,20 @@ object Main {
 
   implicit def strToPost(str: String) = StrPostWrapper(str)
   final case class StrPostWrapper(str: String) {
-    def loginReq = Http("https://my.sa.ucsb.edu/gold/Login.aspx").postData(str)
-    def login = this.loginReq.asString
+    def login = HttpBodyWrapper(Http("https://my.sa.ucsb.edu/gold/Login.aspx")
+      .postData(str)
+      .asString)
   }
 
   final case class StrDocWrapper(str: String) {
-    def doc = JsoupBrowser().parseString(str)
+    def doc = DocHiddenWrapper(JsoupBrowser().parseString(str))
   }
 
   final case class HttpBodyWrapper(http: HttpResponse[String]) {
-    def bod = StrDocWrapper(http.body)
+    def body = StrDocWrapper(http.body)
+    def courses = Http("https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx")
+        .header("Cookie", http.cookies.mkString("; "))
+        .asString
   }
 
   implicit def strToEnc(str: String) = StrEncWrapper(str)
@@ -50,37 +64,31 @@ object Main {
     }
   }
 
-  implicit def docToHidden(doc: Document) = DocHiddenWrapper(doc)
-  final case class DocHiddenWrapper(doc: Document) {
-    def hiddenElem = doc >> elementList("""input[type="hidden"]""")
+  implicit def listElement(hid: List[Element]) = ListElementToStr(hid)
+  final case class ListElementToStr(hid: List[Element]) {
+    def hidden = hid map "name".attr zip (hid map "value".attr)
+  }
 
-    private def hiddenRaw(hid: List[Element]) = Main.hidden(hid)
-    def hidden = this.hiddenRaw(this.hiddenElem)
+  final case class DocHiddenWrapper(doc: Document) {
+    def hidden = (doc >> elementList("""input[type="hidden"]""")).hidden
   }
 
   final case class CredWrapper(cred: Cred) {
-    def login = HttpBodyWrapper(Main.login)
-    def vars = (if (cred.old) List(
-      "ctl00%24pageContent%24PermPinLogin%24userNameText",
-      "ctl00%24pageContent%24PermPinLogin%24passwordText",
-      "ctl00%24pageContent%24PermPinLogin%24loginButton"
-    ) else List(
-      "ctl00%24pageContent%24userNameText",
-      "ctl00%24pageContent%24passwordText",
-      "ctl00%24pageContent%24loginButton"
-    )) zip List(cred.perm, cred.pass, "Login")
-    def hidden = this.login.bod.doc.hidden
-    def body = this.hidden ++ this.vars
-    def loginPayload = Main.body(this.body)
+    def login = HttpBodyWrapper(Http("https://my.sa.ucsb.edu/gold/Login.aspx").asString)
+    def body = StrPostWrapper((this.login.body.doc.hidden ++ ((if (cred.old)
+      List(
+        "ctl00%24pageContent%24PermPinLogin%24userNameText",
+        "ctl00%24pageContent%24PermPinLogin%24passwordText",
+        "ctl00%24pageContent%24PermPinLogin%24loginButton"
+      )
+    else
+      List(
+        "ctl00%24pageContent%24userNameText",
+        "ctl00%24pageContent%24passwordText",
+        "ctl00%24pageContent%24loginButton"
+      )
+      ) zip List(cred.perm, cred.pass, "Login"))).body)
   }
 
-  def loginReq = Http("https://my.sa.ucsb.edu/gold/Login.aspx")
-  def login = this.loginReq.asString
-  def unpack(t: (String, String)) = s"${t._1}=${t._2}"
-  def body(list: List[(String, String)]) = list map Main.unpack mkString "&"
-  def hidden(hid: List[Element]) = hid map "name".attr zip (hid map "value".attr)
-
-  def main(args: Array[String]): Unit = {
-    println(args.creds.loginPayload)
-  }
+  def main(args: Array[String]): Unit = println(args.creds.body.login.courses.body)
 }
