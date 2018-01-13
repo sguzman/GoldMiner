@@ -1,4 +1,4 @@
-# GoldMiner
+# [GoldMiner](https://github.com/sguzman/GoldMiner)
 A Scala wrapper library for interacting with UCSB GOLD portal
 
 ![A scala project](https://i.imgur.com/vBOMoBu.png)
