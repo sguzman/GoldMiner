@@ -14,10 +14,16 @@ import scalaj.http.{Http, HttpResponse}
 object Main {
   implicit class ArgWrap(args: Array[String]) {
     implicit class HttpWrap(http: HttpResponse[String]) {
+      implicit class StrWrap(str: String) {
+        def next = Http(str).header("Cookie", http.cookie).asString
+      }
 
+      def cookie = http.cookies.mkString("; ")
+      def courses = "https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx".next
     }
 
     def cred = CredConfig().parse(args, Cred()).get
+    def courses = args.cred.payload.postLogin.courses
   }
 
   implicit class CredWrap(street: Cred) {
@@ -63,5 +69,5 @@ object Main {
   }
 
   def main(args: Array[String]): Unit =
-    println(args.cred.payload.postLogin.body)
+    println(args.courses)
 }
