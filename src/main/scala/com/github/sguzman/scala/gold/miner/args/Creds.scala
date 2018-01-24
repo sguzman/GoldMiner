@@ -1,4 +1,4 @@
-package com.github.sguzman.scala.gold.miner
+package com.github.sguzman.scala.gold.miner.args
 
 case class Cred(
   perm: String = "",

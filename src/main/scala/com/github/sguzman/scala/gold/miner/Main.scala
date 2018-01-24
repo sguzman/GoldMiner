@@ -3,6 +3,7 @@ package com.github.sguzman.scala.gold.miner
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+import com.github.sguzman.scala.gold.miner.args.{Cred, CredConfig}
 import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._

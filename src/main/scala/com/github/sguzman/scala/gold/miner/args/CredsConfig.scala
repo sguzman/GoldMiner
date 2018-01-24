@@ -1,4 +1,4 @@
-package com.github.sguzman.scala.gold.miner
+package com.github.sguzman.scala.gold.miner.args
 
 case class CredConfig(title: String = "GoldMiner") extends scopt.OptionParser[Cred](title) {
   head(title, "1.0")
