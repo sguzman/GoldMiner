@@ -29,12 +29,10 @@ resolvers ++= Seq(
 
 /** Source Dependencies */
 libraryDependencies ++= Seq(
-  "io.circe" %% "circe-core" % "0.9.0-M2",
-  "io.circe" %% "circe-generic" % "0.9.0-M2",
-  "io.circe" %% "circe-parser" % "0.9.0-M2",
   "org.scalaj" %% "scalaj-http" % "2.3.0",
   "com.github.scopt" %% "scopt" % "3.7.0",
   "net.ruippeixotog" %% "scala-scraper" % "2.0.0",
+  "org.apache.commons" % "commons-lang3" % "3.7",
   "org.scalactic" %% "scalactic" % "3.2.0-SNAP9",
   "org.scalatest" %% "scalatest" % "3.2.0-SNAP9",
 )
