@@ -4,71 +4,73 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 import com.github.sguzman.scala.gold.miner.args.{Cred, CredConfig}
-import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
-import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL._
-import net.ruippeixotog.scalascraper.model.Element
+import net.ruippeixotog.scalascraper.scraper.ContentExtractors.elementList
+import net.ruippeixotog.scalascraper.scraper.ContentExtractors.element
 
-import scala.language.{implicitConversions, postfixOps}
 import scalaj.http.{Http, HttpResponse}
 
 object Main {
-  implicit class ArgWrap(args: Array[String]) {
-    implicit class HttpWrap(http: HttpResponse[String]) {
-      implicit class StrWrap(str: String) {
-        def next = Http(str).header("Cookie", http.cookie).asString
-      }
+  object Search {
+    def getCourses(http: HttpResponse[String]) =
+      Http("https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx")
+      .header("Cookie", http.cookies.mkString("; "))
+      .asString
 
-      def cookie = http.cookies.mkString("; ")
-      def courses = "https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx".next
+    def quarters(http: HttpResponse[String]) =
+      JsoupBrowser().parseString(http.body)
+        .>>(elementList("#pageContent_quarterDropDown > option"))
+      .map(_.attr("value"))
+
+    def departments(http: HttpResponse[String]) =
+      JsoupBrowser().parseString(http.body)
+        .>>(elementList("#pageContent_subjectAreaDropDown > option"))
+        .map(_.attr("value"))
+
+    def doc(http: HttpResponse[String]) =
+      JsoupBrowser().parseString(getCourses(http).body)
+        .>>(elementList("""input[type="hidden"]"""))
+        .map(t => (t.attr("name"),
+          URLEncoder.encode(t.attr("value"),
+            StandardCharsets.UTF_8.toString)))
+
+    def hiddenVars(qt: String, dp: String) =
+      List(
+      "ctl00%24pageContent%24quarterDropDown",
+      "ctl00%24pageContent%24subjectAreaDropDown",
+      "ctl00%24pageContent%24searchButton"
+    ) zip List(qt, URLEncoder.encode(dp, StandardCharsets.UTF_8.toString), "Search")
+
+    def payload(http: HttpResponse[String], qt: String, dp: String) =
+      (doc(http) ++ hiddenVars(qt, dp)).map(t => s"${t._1}=${t._2}").mkString("&")
+
+    def post(http: HttpResponse[String], qt: String, dp: String) =
+      Http("https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx")
+      .header("Cookie", http.cookies.mkString("; "))
+      .postData(payload(http, qt, dp))
+      .asString
+
+    def results(http: HttpResponse[String]) =
+      Http("https://my.sa.ucsb.edu/gold/ResultsFindCourses.aspx")
+      .header("Cookie", http.cookies.mkString("; "))
+      .asString
+
+    def postResults(http: HttpResponse[String], qt: String, dp: String) = {
+      post(http, qt, dp)
+      results(http)
     }
-
-    def cred = CredConfig().parse(args, Cred()).get
-    def courses = args.cred.payload.postLogin.courses
   }
 
-  implicit class CredWrap(street: Cred) {
-    def oldVars = List(
-      "ctl00%24pageContent%24PermPinLogin%24userNameText",
-      "ctl00%24pageContent%24PermPinLogin%24passwordText",
-      "ctl00%24pageContent%24PermPinLogin%24loginButton"
+  def main(args: Array[String]): Unit = {
+    val cred = CredConfig().parse(args, Cred()).get
+    val resp = Login(cred)
+    val qt = Search.quarters(Search.getCourses(resp))
+    val dp = Search.departments(Search.getCourses(resp)).tail
+
+    println(
+      JsoupBrowser().parseString(Search.postResults(resp, qt.head, dp.head).body)
+        .>>(element("body")).text
     )
-    def newVars = List(
-      "ctl00%24pageContent%24userNameText",
-      "ctl00%24pageContent%24passwordText",
-      "ctl00%24pageContent%24loginButton"
-    )
-    def vars = if (street.old) oldVars else newVars
-    def credsVar = List(street.perm, street.pass, "Login")
-
-    implicit class TupWrap(t: (String, String)) {
-      def mkString = s"${t._1}=${t._2}"
-    }
-
-    def logVars = vars zip credsVar
-    def payloadRaw = "https://my.sa.ucsb.edu/gold/Login.aspx".getLogin.body.doc.hidden ++ logVars
-    def payload = payloadRaw map (_.mkString) mkString "&"
   }
-
-  implicit class StrWrap(str: String) {
-    def getLogin = Http(str).asString
-    def postLogin = Http("https://my.sa.ucsb.edu/gold/Login.aspx").postData(str).asString
-    def doc = JsoupBrowser().parseString(str)
-    def enc = URLEncoder.encode(str, StandardCharsets.UTF_8.toString)
-    def attr(e: Element) = e.attr(str)
-  }
-
-  implicit class DocWrap(doc: Browser#DocumentType) {
-    implicit class ListElementWrap(list: List[Element]) {
-      def name = list map "name".attr
-      def value = list map "value".attr map (_.enc)
-      def parsed = name zip value
-    }
-
-    def hiddenRaw = doc >> elementList("""input[type="hidden"]""")
-    def hidden = hiddenRaw.parsed
-  }
-
-  def main(args: Array[String]): Unit =
-    println(args.courses)
 }
